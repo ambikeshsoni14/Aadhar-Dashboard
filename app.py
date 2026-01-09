@@ -7,15 +7,78 @@ st.title('Aadhaar Data Analysis Dashboard')
 
 @st.cache_data
 def load_and_preprocess_data():
-    # Load datasets
-    import pandas as pd
+    # Load datasets from Google Cloud Storage URLs
+    # IMPORTANT: Replace these placeholder URLs with your actual Public URLs from GCS!
+    url_1 = "https://drive.google.com/uc?id=18o0yunO9cgr-2eEpJADlmncY9j_gk1s2"
+    df_demographic = pd.read_csv(url_1)
+    url_2 = "https://drive.google.com/uc?id=1KA3ovFxtL2NWnmSg0HdE-_H2zgCkucXB"
+    df_biometric = pd.read_csv(url_2)
+    url_3 = "https://drive.google.com/uc?id=15QUoL38XobCg_2cjv88SEsEcBUbLhmEd"
+    df_enrolment = pd.read_csv(url_3)
 
-url_1 = "https://drive.google.com/uc?id=18o0yunO9cgr-2eEpJADlmncY9j_gk1s2"
-df_demographic = pd.read_csv(url_1)
-url_2 = "https://drive.google.com/uc?id=1KA3ovFxtL2NWnmSg0HdE-_H2zgCkucXB"
-df_biometric = pd.read_csv(url_2)
-url_3 = "https://drive.google.com/uc?id=15QUoL38XobCg_2cjv88SEsEcBUbLhmEd"
-df_enrolment = pd.read_csv(url_3)
+    # Convert 'date' columns to datetime objects
+    df_biometric['date'] = pd.to_datetime(df_biometric['date'], format='%d-%m-%Y')
+    df_demographic['date'] = pd.to_datetime(df_demographic['date'], format='%d-%m-%Y')
+    df_enrolment['date'] = pd.to_datetime(df_enrolment['date'], format='%d-%m-%Y')
+
+    # Standardize 'state' and 'district' columns
+    for df in [df_biometric, df_demographic, df_enrolment]:
+        for col in ['state', 'district']:
+            df[col] = df[col].str.lower().str.strip()
+
+    # Rename age-related columns for consistency
+    df_biometric.rename(columns={'bio_age_5_17': 'age_5_17', 'bio_age_17_': 'age_18_greater'}, inplace=True)
+    df_demographic.rename(columns={'demo_age_5_17': 'age_5_17', 'demo_age_17_': 'age_18_greater'}, inplace=True)
+
+    # Merge dataframes
+    df_merged_bio_demo = pd.merge(df_biometric,
+                                  df_demographic,
+                                  on=['date', 'state', 'district', 'pincode'],
+                                  how='left',
+                                  suffixes=('_biometric', '_demographic'))
+
+    df_combined = pd.merge(df_merged_bio_demo,
+                           df_enrolment,
+                           on=['date', 'state', 'district', 'pincode'],
+                           how='left',
+                           suffixes=('_bio_demo', '_enrolment'))
+
+    # Handle NaN values introduced by merging
+    age_columns_to_fill = [
+        'age_5_17_demographic',
+        'age_18_greater_demographic',
+        'age_0_5',
+        'age_5_17',
+        'age_18_greater'
+    ]
+
+    for col in age_columns_to_fill:
+        if col in df_combined.columns:
+            df_combined[col] = df_combined[col].fillna(0).astype(int)
+
+    # Create total activity columns
+    df_combined['total_biometric_activity'] = df_combined['age_5_17_biometric'] + df_combined['age_18_greater_biometric']
+    df_combined['total_demographic_activity'] = df_combined['age_5_17_demographic'] + df_combined['age_18_greater_demographic']
+    df_combined['total_enrolment_activity'] = df_combined['age_0_5'] + df_combined['age_5_17'] + df_combined['age_18_greater']
+    
+    # Convert state and district to category type after merging and standardization
+    df_combined['state'] = df_combined['state'].astype('category')
+    df_combined['district'] = df_combined['district'].astype('category')
+
+    return df_combined
+
+df_combined = load_and_preprocess_data()
+
+st.write("Data loaded and preprocessed successfully!")
+st.write(df_combined.head())
+
+@st.cache_data
+def load_and_preprocess_data():
+    # Load datasets from Google Cloud Storage URLs
+    # IMPORTANT: Replace these placeholder URLs with your actual Public URLs from GCS!
+    df_biometric = pd.read_csv('https://storage.googleapis.com/YOUR_BUCKET_NAME/api_data_aadhar_biometric_500000_1000000.csv')
+    df_demographic = pd.read_csv('https://storage.googleapis.com/YOUR_BUCKET_NAME/api_data_aadhar_demographic_500000_1000000.csv')
+    df_enrolment = pd.read_csv('https://storage.googleapis.com/YOUR_BUCKET_NAME/api_data_aadhar_enrolment_500000_1000000.csv')
 
     # Convert 'date' columns to datetime objects
     df_biometric['date'] = pd.to_datetime(df_biometric['date'], format='%d-%m-%Y')
@@ -306,130 +369,3 @@ st.markdown("""
 Welcome to the Aadhaar Data Analysis Dashboard. This application provides insights into biometric, demographic, and enrolment activities across India.
 Use the sidebar filters to explore data by state, district, and date range.
 """)
-
-@st.cache_data
-def load_and_preprocess_data():
-    # Load datasets
-    df_biometric = pd.read_csv('api_data_aadhar_biometric_500000_1000000.csv')
-    df_demographic = pd.read_csv('api_data_aadhar_demographic_500000_1000000.csv')
-    df_enrolment = pd.read_csv('api_data_aadhar_enrolment_500000_1000000.csv')
-
-    # Convert 'date' columns to datetime objects
-    df_biometric['date'] = pd.to_datetime(df_biometric['date'], format='%d-%m-%Y')
-    df_demographic['date'] = pd.to_datetime(df_demographic['date'], format='%d-%m-%Y')
-    df_enrolment['date'] = pd.to_datetime(df_enrolment['date'], format='%d-%m-%Y')
-
-    # Standardize 'state' and 'district' columns
-    for df in [df_biometric, df_demographic, df_enrolment]:
-        for col in ['state', 'district']:
-            df[col] = df[col].str.lower().str.strip()
-
-    # Rename age-related columns for consistency
-    df_biometric.rename(columns={'bio_age_5_17': 'age_5_17', 'bio_age_17_': 'age_18_greater'}, inplace=True)
-    df_demographic.rename(columns={'demo_age_5_17': 'age_5_17', 'demo_age_17_': 'age_18_greater'}, inplace=True)
-
-    # Merge dataframes
-    df_merged_bio_demo = pd.merge(df_biometric,
-                                  df_demographic,
-                                  on=['date', 'state', 'district', 'pincode'],
-                                  how='left',
-                                  suffixes=('_biometric', '_demographic'))
-
-    df_combined = pd.merge(df_merged_bio_demo,
-                           df_enrolment,
-                           on=['date', 'state', 'district', 'pincode'],
-                           how='left',
-                           suffixes=('_bio_demo', '_enrolment'))
-
-    # Handle NaN values introduced by merging
-    age_columns_to_fill = [
-        'age_5_17_demographic',
-        'age_18_greater_demographic',
-        'age_0_5',
-        'age_5_17',
-        'age_18_greater'
-    ]
-
-    for col in age_columns_to_fill:
-        if col in df_combined.columns:
-            df_combined[col] = df_combined[col].fillna(0).astype(int)
-
-    # Create total activity columns
-    df_combined['total_biometric_activity'] = df_combined['age_5_17_biometric'] + df_combined['age_18_greater_biometric']
-    df_combined['total_demographic_activity'] = df_combined['age_5_17_demographic'] + df_combined['age_18_greater_demographic']
-    df_combined['total_enrolment_activity'] = df_combined['age_0_5'] + df_combined['age_5_17'] + df_combined['age_18_greater']
-    
-    # Convert state and district to category type after merging and standardization
-    df_combined['state'] = df_combined['state'].astype('category')
-    df_combined['district'] = df_combined['district'].astype('category')
-
-    return df_combined
-
-df_combined = load_and_preprocess_data()
-
-st.write("Data loaded and preprocessed successfully!")
-st.write(df_combined.head())
-
-@st.cache_data
-def load_and_preprocess_data():
-    # Load datasets from Google Cloud Storage URLs
-    # IMPORTANT: Replace these placeholder URLs with your actual Public URLs from GCS!
-    df_biometric = pd.read_csv('https://storage.googleapis.com/YOUR_BUCKET_NAME/api_data_aadhar_biometric_500000_1000000.csv')
-    df_demographic = pd.read_csv('https://storage.googleapis.com/YOUR_BUCKET_NAME/api_data_aadhar_demographic_500000_1000000.csv')
-    df_enrolment = pd.read_csv('https://storage.googleapis.com/YOUR_BUCKET_NAME/api_data_aadhar_enrolment_500000_1000000.csv')
-
-    # Convert 'date' columns to datetime objects
-    df_biometric['date'] = pd.to_datetime(df_biometric['date'], format='%d-%m-%Y')
-    df_demographic['date'] = pd.to_datetime(df_demographic['date'], format='%d-%m-%Y')
-    df_enrolment['date'] = pd.to_datetime(df_enrolment['date'], format='%d-%m-%Y')
-
-    # Standardize 'state' and 'district' columns
-    for df in [df_biometric, df_demographic, df_enrolment]:
-        for col in ['state', 'district']:
-            df[col] = df[col].str.lower().str.strip()
-
-    # Rename age-related columns for consistency
-    df_biometric.rename(columns={'bio_age_5_17': 'age_5_17', 'bio_age_17_': 'age_18_greater'}, inplace=True)
-    df_demographic.rename(columns={'demo_age_5_17': 'age_5_17', 'demo_age_17_': 'age_18_greater'}, inplace=True)
-
-    # Merge dataframes
-    df_merged_bio_demo = pd.merge(df_biometric,
-                                  df_demographic,
-                                  on=['date', 'state', 'district', 'pincode'],
-                                  how='left',
-                                  suffixes=('_biometric', '_demographic'))
-
-    df_combined = pd.merge(df_merged_bio_demo,
-                           df_enrolment,
-                           on=['date', 'state', 'district', 'pincode'],
-                           how='left',
-                           suffixes=('_bio_demo', '_enrolment'))
-
-    # Handle NaN values introduced by merging
-    age_columns_to_fill = [
-        'age_5_17_demographic',
-        'age_18_greater_demographic',
-        'age_0_5',
-        'age_5_17',
-        'age_18_greater'
-    ]
-
-    for col in age_columns_to_fill:
-        if col in df_combined.columns:
-            df_combined[col] = df_combined[col].fillna(0).astype(int)
-
-    # Create total activity columns
-    df_combined['total_biometric_activity'] = df_combined['age_5_17_biometric'] + df_combined['age_18_greater_biometric']
-    df_combined['total_demographic_activity'] = df_combined['age_5_17_demographic'] + df_combined['age_18_greater_demographic']
-    df_combined['total_enrolment_activity'] = df_combined['age_0_5'] + df_combined['age_5_17'] + df_combined['age_18_greater']
-    
-    # Convert state and district to category type after merging and standardization
-    df_combined['state'] = df_combined['state'].astype('category')
-    df_combined['district'] = df_combined['district'].astype('category')
-
-    return df_combined
-
-df_combined = load_and_preprocess_data()
-
-st.write("Data loaded and preprocessed successfully!")
-st.write(df_combined.head())
