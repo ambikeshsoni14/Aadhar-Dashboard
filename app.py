@@ -269,33 +269,7 @@ if not df_filtered.empty:
 else:
     st.warning('No data available for selected filters to display state activity.')
 
-st.subheader('Overall Activity by Age Group')
-
-df_filtered['total_activity_age_0_5'] = (
-    df_filtered['age_0_5_biometric'] +
-    df_filtered['age_0_5_demographic'] +
-    df_filtered['age_0_5']
-)
-
-df_filtered['total_activity_age_5_17'] = (
-    df_filtered['age_5_17_biometric'] +
-    df_filtered['age_5_17_demographic'] +
-    df_filtered['age_5_17']
-)
-
-df_filtered['total_activity_age_18_greater'] = (
-    df_filtered['age_18_greater_biometric'] +
-    df_filtered['age_18_greater_demographic'] +
-    df_filtered['age_18_greater']
-)
-
-overall_age_group_activity = df_filtered[
-    [
-        'total_activity_age_0_5',
-        'total_activity_age_5_17',
-        'total_activity_age_18_greater'
-    ]
-].sum()
+if not df_filtered.empty: df_filtered['total_activity_age_0_5'] = df_filtered['age_0_5'] df_filtered['total_activity_age_5_17'] = df_filtered['age_5_17_biometric'] + df_filtered['age_5_17_demographic'] + df_filtered['age_5_17'] df_filtered['total_activity_age_18_greater'] = df_filtered['age_18_greater_biometric'] + df_filtered['age_18_greater_demographic'] + df_filtered['age_18_greater'] overall_age_group_activity = df_filtered[['total_activity_age_0_5', 'total_activity_age_5_17', 'total_activity_age_18_greater']].sum()
 
     fig2 = plt.figure(figsize=(10, 6))
     sns.barplot(x=overall_age_group_activity.index, y=overall_age_group_activity.values, palette='plasma')
