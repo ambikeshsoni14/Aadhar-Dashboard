@@ -190,86 +190,47 @@ st.write(f"Number of records after applying filters: {len(df_filtered)}")
 st.write(df_filtered.head())
 
 st.subheader('Activity Distribution by State')
-
 if not df_filtered.empty:
-
-    state_activity = (
-        df_filtered
-        .groupby('state', as_index=False)
-        [['total_biometric_activity',
-          'total_demographic_activity',
-          'total_enrolment_activity']]
-        .sum()
-    )
+    state_activity = df_filtered.groupby('state')[['total_biometric_activity', 'total_demographic_activity', 'total_enrolment_activity']].sum()
 
     fig1, axes = plt.subplots(3, 1, figsize=(12, 18))
 
-    # -------- Top 10 Biometric --------
-    top_10_biometric = (
-        state_activity
-        .sort_values('total_biometric_activity', ascending=False)
-        .head(10)
-    )
-
-    sns.barplot(
-        data=top_10_biometric,
-        x='state',
-        y='total_biometric_activity',
-        ax=axes[0]
-    )
-
+    # Top 10 States by Total Biometric Activity
+    top_10_biometric = state_activity.sort_values(by='total_biometric_activity', ascending=False).head(10)
+    sns.barplot(x=top_10_biometric.index, y=top_10_biometric['total_biometric_activity'], palette='viridis', ax=axes[0])
     axes[0].set_title('Top 10 States by Total Biometric Activity')
     axes[0].set_xlabel('State')
     axes[0].set_ylabel('Total Biometric Activity')
     axes[0].tick_params(axis='x', rotation=45)
 
-
-    # -------- Top 10 Demographic --------
-    top_10_demographic = (
-        state_activity
-        .sort_values('total_demographic_activity', ascending=False)
-        .head(10)
-    )
-
-    sns.barplot(
-        data=top_10_demographic,
-        x='state',
-        y='total_demographic_activity',
-        ax=axes[1]
-    )
-
+    # Top 10 States by Total Demographic Activity
+    top_10_demographic = state_activity.sort_values(by='total_demographic_activity', ascending=False).head(10)
+    sns.barplot(x=top_10_demographic.index, y=top_10_demographic['total_demographic_activity'], palette='magma', ax=axes[1])
     axes[1].set_title('Top 10 States by Total Demographic Activity')
     axes[1].set_xlabel('State')
     axes[1].set_ylabel('Total Demographic Activity')
     axes[1].tick_params(axis='x', rotation=45)
 
-
-    # -------- Top 10 Enrolment --------
-    top_10_enrolment = (
-        state_activity
-        .sort_values('total_enrolment_activity', ascending=False)
-        .head(10)
-    )
-
-    sns.barplot(
-        data=top_10_enrolment,
-        x='state',
-        y='total_enrolment_activity',
-        ax=axes[2]
-    )
-
+    # Top 10 States by Total Enrolment Activity
+    top_10_enrolment = state_activity.sort_values(by='total_enrolment_activity', ascending=False).head(10)
+    sns.barplot(x=top_10_enrolment.index, y=top_10_enrolment['total_enrolment_activity'], palette='cividis', ax=axes[2])
     axes[2].set_title('Top 10 States by Total Enrolment Activity')
     axes[2].set_xlabel('State')
     axes[2].set_ylabel('Total Enrolment Activity')
     axes[2].tick_params(axis='x', rotation=45)
 
     plt.tight_layout()
-    st.pyplot(fig1, use_container_width=True)
-
+    st.pyplot(fig1)
 else:
     st.warning('No data available for selected filters to display state activity.')
 
-if not df_filtered.empty: df_filtered['total_activity_age_0_5'] = df_filtered['age_0_5'] df_filtered['total_activity_age_5_17'] = df_filtered['age_5_17_biometric'] + df_filtered['age_5_17_demographic'] + df_filtered['age_5_17'] df_filtered['total_activity_age_18_greater'] = df_filtered['age_18_greater_biometric'] + df_filtered['age_18_greater_demographic'] + df_filtered['age_18_greater'] overall_age_group_activity = df_filtered[['total_activity_age_0_5', 'total_activity_age_5_17', 'total_activity_age_18_greater']].sum()
+st.subheader('Overall Activity by Age Group')
+if not df_filtered.empty:
+    df_filtered['total_activity_age_0_5'] = df_filtered['age_0_5']
+    df_filtered['total_activity_age_5_17'] = df_filtered['age_5_17_biometric'] + df_filtered['age_5_17_demographic'] + df_filtered['age_5_17']
+    df_filtered['total_activity_age_18_greater'] = df_filtered['age_18_greater_biometric'] + df_filtered['age_18_greater_demographic'] + df_filtered['age_18_greater']
+
+    overall_age_group_activity = df_filtered[['total_activity_age_0_5', 'total_activity_age_5_17', 'total_activity_age_18_greater']].sum()
 
     fig2 = plt.figure(figsize=(10, 6))
     sns.barplot(x=overall_age_group_activity.index, y=overall_age_group_activity.values, palette='plasma')
