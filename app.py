@@ -283,8 +283,6 @@ if not df_filtered.empty:
 else:
     st.warning('No data available for selected filters to display correlation matrix.')
 
-st.subheader('Actionable Insights and Solution Frameworks')
-
 st.markdown("""
 ### Summary of Key Findings, Patterns, Trends, and Anomalies
 
