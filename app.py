@@ -196,9 +196,9 @@ st.subheader('Activity Distribution by State')
 if not df_filtered.empty:
     state_activity = df_filtered.groupby('state')[['total_biometric_activity', 'total_demographic_activity', 'total_enrolment_activity']].sum()
 
-    top_10_biometric = state_activity.sort_values(by='total_biometric_activity', ascending=False').head(10)
-    top_10_demographic = state_activity.sort_values(by='total_demographic_activity', ascending=False').head(10)
-    top_10_enrolment = state_activity.sort_values(by='total_enrolment_activity', ascending=False').head(10)
+    top_10_biometric = state_activity.sort_values(by='total_biometric_activity', ascending=False).head(10)
+    top_10_demographic = state_activity.sort_values(by='total_demographic_activity', ascending=False).head(10)
+    top_10_enrolment = state_activity.sort_values(by='total_enrolment_activity', ascending=False).head(10)
 
     def plot_bar(x, y, title, palette, ylabel):
         fig, ax = plt.subplots(figsize=(12, 4), dpi=100)
