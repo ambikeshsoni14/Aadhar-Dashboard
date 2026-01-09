@@ -203,9 +203,6 @@ if not df_filtered.empty:
     axes[0].set_ylabel('Total Biometric Activity')
     axes[0].tick_params(axis='x', rotation=45)
 
-for label in axes[0].get_xticklabels():
-    label.set_ha('right')
-
     # Top 10 States by Total Demographic Activity
     top_10_demographic = state_activity.sort_values(by='total_demographic_activity', ascending=False).head(10)
     sns.barplot(x=top_10_demographic.index, y=top_10_demographic['total_demographic_activity'], palette='magma', ax=axes[1])
@@ -214,8 +211,6 @@ for label in axes[0].get_xticklabels():
     axes[1].set_ylabel('Total Demographic Activity')
     axes[1].tick_params(axis='x', rotation=45)
 
-for label in axes[1].get_xticklabels():
-    label.set_ha('right')
 
     # Top 10 States by Total Enrolment Activity
     top_10_enrolment = state_activity.sort_values(by='total_enrolment_activity', ascending=False).head(10)
@@ -225,8 +220,6 @@ for label in axes[1].get_xticklabels():
     axes[2].set_ylabel('Total Enrolment Activity')
     axes[2].tick_params(axis='x', rotation=45)
 
-for label in axes[2].get_xticklabels():
-    label.set_ha('right')
 
     plt.tight_layout()
     st.pyplot(fig1)
