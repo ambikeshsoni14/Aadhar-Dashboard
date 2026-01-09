@@ -201,7 +201,7 @@ if not df_filtered.empty:
     axes[0].set_title('Top 10 States by Total Biometric Activity')
     axes[0].set_xlabel('State')
     axes[0].set_ylabel('Total Biometric Activity')
-    axes[0].tick_params(axis='x', rotation=45, ha='right')
+    axes[0].tick_params(axis='x', rotation=45)
 
     # Top 10 States by Total Demographic Activity
     top_10_demographic = state_activity.sort_values(by='total_demographic_activity', ascending=False).head(10)
@@ -209,7 +209,7 @@ if not df_filtered.empty:
     axes[1].set_title('Top 10 States by Total Demographic Activity')
     axes[1].set_xlabel('State')
     axes[1].set_ylabel('Total Demographic Activity')
-    axes[1].tick_params(axis='x', rotation=45, ha='right')
+    axes[1].tick_params(axis='x', rotation=45)
 
     # Top 10 States by Total Enrolment Activity
     top_10_enrolment = state_activity.sort_values(by='total_enrolment_activity', ascending=False).head(10)
@@ -217,7 +217,7 @@ if not df_filtered.empty:
     axes[2].set_title('Top 10 States by Total Enrolment Activity')
     axes[2].set_xlabel('State')
     axes[2].set_ylabel('Total Enrolment Activity')
-    axes[2].tick_params(axis='x', rotation=45, ha='right')
+    axes[2].tick_params(axis='x', rotation=45)
 
     plt.tight_layout()
     st.pyplot(fig1)
