@@ -8,9 +8,14 @@ st.title('Aadhaar Data Analysis Dashboard')
 @st.cache_data
 def load_and_preprocess_data():
     # Load datasets
-    df_biometric = pd.read_csv('/content/api_data_aadhar_biometric_500000_1000000.csv')
-    df_demographic = pd.read_csv('/content/api_data_aadhar_demographic_500000_1000000.csv')
-    df_enrolment = pd.read_csv('/content/api_data_aadhar_enrolment_500000_1000000.csv')
+    import pandas as pd
+
+url_1 = "https://drive.google.com/uc?id=18o0yunO9cgr-2eEpJADlmncY9j_gk1s2"
+df_demographic = pd.read_csv(url_1)
+url_2 = "https://drive.google.com/uc?id=1KA3ovFxtL2NWnmSg0HdE-_H2zgCkucXB"
+df_biometric = pd.read_csv(url_2)
+url_3 = "https://drive.google.com/uc?id=15QUoL38XobCg_2cjv88SEsEcBUbLhmEd"
+df_enrolment = pd.read_csv(url_3)
 
     # Convert 'date' columns to datetime objects
     df_biometric['date'] = pd.to_datetime(df_biometric['date'], format='%d-%m-%Y')
