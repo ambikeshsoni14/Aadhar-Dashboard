@@ -190,37 +190,38 @@ st.write(f"Number of records after applying filters: {len(df_filtered)}")
 st.write(df_filtered.head())
 
 st.subheader('Activity Distribution by State')
+
+    # --- replace the original 3-panel plotting code with the block below ---
+
 if not df_filtered.empty:
     state_activity = df_filtered.groupby('state')[['total_biometric_activity', 'total_demographic_activity', 'total_enrolment_activity']].sum()
 
-    fig1, axes = plt.subplots(3, 1, figsize=(12, 18))
+    top_10_biometric = state_activity.sort_values(by='total_biometric_activity', ascending=False').head(10)
+    top_10_demographic = state_activity.sort_values(by='total_demographic_activity', ascending=False').head(10)
+    top_10_enrolment = state_activity.sort_values(by='total_enrolment_activity', ascending=False').head(10)
 
-    # Top 10 States by Total Biometric Activity
-    top_10_biometric = state_activity.sort_values(by='total_biometric_activity', ascending=False).head(10)
-    sns.barplot(x=top_10_biometric.index, y=top_10_biometric['total_biometric_activity'], palette='viridis', ax=axes[0])
-    axes[0].set_title('Top 10 States by Total Biometric Activity')
-    axes[0].set_xlabel('State')
-    axes[0].set_ylabel('Total Biometric Activity')
-    axes[0].tick_params(axis='x', rotation=45)
+    def plot_bar(x, y, title, palette, ylabel):
+        fig, ax = plt.subplots(figsize=(12, 4), dpi=100)
+        sns.barplot(x=x, y=y, palette=palette, ax=ax)
+        ax.set_title(title, fontsize=12)
+        ax.set_xlabel('State', fontsize=10)
+        ax.set_ylabel(ylabel, fontsize=10)
+        # rotate and reduce font size for many category labels
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right', fontsize=9)
+        # make room for rotated tick labels
+        plt.tight_layout()
+        st.pyplot(fig)
+        plt.close(fig)
 
-    # Top 10 States by Total Demographic Activity
-    top_10_demographic = state_activity.sort_values(by='total_demographic_activity', ascending=False).head(10)
-    sns.barplot(x=top_10_demographic.index, y=top_10_demographic['total_demographic_activity'], palette='magma', ax=axes[1])
-    axes[1].set_title('Top 10 States by Total Demographic Activity')
-    axes[1].set_xlabel('State')
-    axes[1].set_ylabel('Total Demographic Activity')
-    axes[1].tick_params(axis='x', rotation=45)
+    plot_bar(top_10_biometric.index, top_10_biometric['total_biometric_activity'],
+             'Top 10 States by Total Biometric Activity', 'viridis', 'Total Biometric Activity')
 
-    # Top 10 States by Total Enrolment Activity
-    top_10_enrolment = state_activity.sort_values(by='total_enrolment_activity', ascending=False).head(10)
-    sns.barplot(x=top_10_enrolment.index, y=top_10_enrolment['total_enrolment_activity'], palette='cividis', ax=axes[2])
-    axes[2].set_title('Top 10 States by Total Enrolment Activity')
-    axes[2].set_xlabel('State')
-    axes[2].set_ylabel('Total Enrolment Activity')
-    axes[2].tick_params(axis='x', rotation=45)
+    plot_bar(top_10_demographic.index, top_10_demographic['total_demographic_activity'],
+             'Top 10 States by Total Demographic Activity', 'magma', 'Total Demographic Activity')
 
-    plt.tight_layout()
-    st.pyplot(fig1)
+    plot_bar(top_10_enrolment.index, top_10_enrolment['total_enrolment_activity'],
+             'Top 10 States by Total Enrolment Activity', 'cividis', 'Total Enrolment Activity')
+
 else:
     st.warning('No data available for selected filters to display state activity.')
 
